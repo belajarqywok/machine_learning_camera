@@ -2,7 +2,7 @@
   "name": "docpet_camera",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 80",
+    "app": "vite --host 0.0.0.0 --port 80",
     "build": "vite build",
     "preview": "vite preview"
   },

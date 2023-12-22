@@ -1,14 +1,11 @@
-service: ml-camera
-runtime: python39
+runtime: nodejs18
 instance_class: F1
 entrypoint: |
-  chmod +x entrypoint.sh
-  ./entrypoint.sh
+  npm install
+  npm run app
 
 runtime_config:
   operating_system: ubuntu22
-
-service_account: petdoc-capstone-project@appspot.gserviceaccount.com
 
 automatic_scaling:
   target_cpu_utilization: 0.90
@@ -19,25 +16,6 @@ automatic_scaling:
   max_concurrent_requests: 80
 
 resources:
-  cpu: 2
-  memory_gb: 2
+  cpu: 4
+  memory_gb: 4
   disk_size_gb: 10
-  volumes:
-  - name: ramdisk1
-    volume_type: tmpfs
-    size_gb: 0.5
-
-liveness_check:
-  path: "/liveness_check"
-  check_interval_sec: 30
-  timeout_sec: 4
-  failure_threshold: 2
-  success_threshold: 2
-
-readiness_check:
-  path: "/readiness_check"
-  check_interval_sec: 5
-  timeout_sec: 4
-  failure_threshold: 2
-  success_threshold: 2
-  app_start_timeout_sec: 300
