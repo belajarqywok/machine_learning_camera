@@ -1,17 +1,19 @@
 <template>
 	<main class="camera-view app">
 		<video ref="videoElement" autoplay playsinline></video>
-	  	<div class="capture-button" @click="capturePhoto">Jeprett..</div>
+	  	<div class="capture-button" @click="capturePhoto">Ambil Gambar</div>
 	</main>
 </template>
   
 <script>
-  	import Swal from 'sweetalert2'
+  import Swal from 'sweetalert2'
+  import { generateBlobImageName } from './utils'
   
 	export default {
 		data() {
 			return {
 				video: null,
+        swal: Swal
 			}
 		},
 	
@@ -21,9 +23,9 @@
 		},
 	
 		methods: {
-			swalErrno: async (Swal) => {
-				Swal.close()
-				Swal.fire({
+			swalErrno: async (swal) => {
+				swal.close()
+			  swal.fire({
 					title: 'Nginggg...!!!',
 					text: 'Upps.. Gagal Mendeteksi, coba lagi !..',
 					icon: 'error',
@@ -37,16 +39,16 @@
 					const stream = await navigator.mediaDevices.getUserMedia(constraints)
 					this.$refs.videoElement.srcObject = stream
 
-				} catch (_) { await this.swalErrno() }
+				} catch (_) { await this.swalErrno(this.swal) }
 			},
 	
 			async capturePhoto() {
-				Swal.fire({
+				this.swal.fire({
 					title: 'Sedang Menganalisa Penyakit..',
 					allowOutsideClick: false,
 					showConfirmButton: false,
 					willOpen: () => {
-						Swal.showLoading()
+						this.swal.showLoading()
 					},
 				})
 		
@@ -64,33 +66,45 @@
 		
 				try {
 					const formData = new FormData()
-					formData.append('file', blob)
-
-					const endpoint = 'http://192.168.137.1:8000/api/disease_detection/'
+					formData.append('file', blob, await generateBlobImageName())
 		
-					const response = await fetch(endpoint, {
-						method: 'POST',
-						body: formData,
-					})
+          const headers = new Headers();
+          headers.append('Accept', '*/*');
+          headers.append('Accept-Encoding', 'gzip, deflate, br');
+          headers.append('Connection', 'keep-alive');
+
+					const endpoint = 'https://docpet-backend-service-rnjlx2stlq-et.a.run.app/api/disease_detection/';
+
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+            headers: headers,
+          });
+
+          if (!response.ok) await this.swalErrno(this.swal)
 		
 					const response_body = await response.json()
-					Swal.close()
-					Swal.fire({
-						title: `${response_body.data.name}!`,
-						html: `
-							<br/>
-							<b>Gejala</b>
-							<p style="text-align: justify;">${response_body.data.symptom}</p><br/>
-							<b>Perawatan</b>
-							<p style="text-align: justify;">${response_body.data.treatment}</p><br/>
-							<b>Informasi</b>
-							<p style="text-align: justify;">${response_body.data.information}</p>
-						`,
-						icon: 'success',
-						confirmButtonText: 'Kembali',
-					})
+          if (response_body.data == null) await this.swalErrno(this.swal)
+          
+          else {
+            this.swal.close()
+            this.swal.fire({
+              title: `${response_body.data.name}!`,
+              html: `
+                <br/>
+                <b>Gejala</b>
+                <p style="text-align: justify;">${response_body.data.symptom}</p><br/>
+                <b>Perawatan</b>
+                <p style="text-align: justify;">${response_body.data.treatment}</p><br/>
+                <b>Informasi</b>
+                <p style="text-align: justify;">${response_body.data.information}</p>
+              `,
+              icon: 'success',
+              confirmButtonText: 'Kembali',
+            })
+          }
 
-				} catch (_) { await this.swalErrno() }
+				} catch (_) { await this.swalErrno(this.swal) }
 			},
 	
 			dataURItoBlob(dataURI) {
