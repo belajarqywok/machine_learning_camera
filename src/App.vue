@@ -73,7 +73,8 @@ export default {
                 headers.append('Accept-Encoding', 'gzip, deflate, br')
                 headers.append('Connection', 'keep-alive')
 
-                const endpoint = 'https://docpet-backend-service-rnjlx2stlq-et.a.run.app/api/disease_detection/'
+                // const endpoint = 'https://docpet-backend-service-rnjlx2stlq-et.a.run.app/api/disease_detection/'
+                const endpoint = 'https://qywok-docpet-backend-service.hf.space/api/disease_detection/'
 
                 const response = await fetch(endpoint, {
                     body: formData,
